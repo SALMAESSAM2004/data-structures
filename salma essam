@@ -1,0 +1,133 @@
+#include <iostream>
+
+#define DOUBLY_LINKEd linked list
+
+class Node {
+public:
+    int data;
+    Node* next;
+#ifdef DOUBLY_LINKED
+    Node* prev;
+#endif
+
+    Node(int val) : data(val), next(nullptr)
+#ifdef DOUBLY_LINKED
+    , prev(nullptr)
+#endif
+    {}
+};
+
+class SortedLinkedList {
+private:
+    Node* head;
+
+public:
+    SortedLinkedList() : head(nullptr) {}
+
+    void insert(int value) {
+        Node* newNode = new Node(value);
+
+        if (!head || value < head->data) {
+            newNode->next = head;
+#ifdef DOUBLY_LINKED
+            if (head) head->prev = newNode;
+#endif
+            head = newNode;
+            return;
+        }
+
+        Node* current = head;
+        while (current->next && current->next->data < value) {
+            current = current->next;
+        }
+
+        newNode->next = current->next;
+#ifdef DOUBLY_LINKED
+        if (current->next) current->next->prev = newNode;
+        newNode->prev = current;
+#endif
+        current->next = newNode;
+    }
+
+    void remove(int value) {
+        if (!head) return;
+
+        if (head->data == value) {
+            Node* toDelete = head;
+            head = head->next;
+#ifdef DOUBLY_LINKED
+            if (head) head->prev = nullptr;
+#endif
+            delete toDelete;
+            return;
+        }
+
+        Node* current = head;
+        while (current->next && current->next->data != value) {
+            current = current->next;
+        }
+
+        if (current->next) {
+            Node* toDelete = current->next;
+            current->next = toDelete->next;
+#ifdef DOUBLY_LINKED
+            if (toDelete->next) toDelete->next->prev = current;
+#endif
+            delete toDelete;
+        }
+    }
+
+    void displayForward() const {
+        Node* current = head;
+        std::cout << "List (ascending): ";
+        while (current) {
+            std::cout << current->data << " ";
+            current = current->next;
+        }
+        std::cout << std::endl;
+    }
+
+#ifdef DOUBLY_LINKED
+    void displayBackward() const {
+        Node* current = head;
+        if (!current) return;
+        while (current->next) current = current->next;
+
+        std::cout << "List (descending): ";
+        while (current) {
+            std::cout << current->data << " ";
+            current = current->prev;
+        }
+        std::cout << std::endl;
+    }
+#endif
+
+    ~SortedLinkedList() {
+        Node* current = head;
+        while (current) {
+            Node* temp = current;
+            current = current->next;
+            delete temp;
+        }
+    }
+};
+
+int main() {
+    SortedLinkedList list;
+    list.insert(5);
+    list.insert(3);
+    list.insert(9);
+    list.insert(1);
+    list.displayForward();
+#ifdef DOUBLY_LINKED
+    list.displayBackward();
+#endif
+
+    list.remove(3);
+    list.displayForward();
+#ifdef DOUBLY_LINKED
+    list.displayBackward();
+#endif
+
+    return 0;
+}
